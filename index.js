@@ -84,7 +84,7 @@ app.post('/conduct_transaction', async (req, res) => {
     for (const [key, value] of Object.entries(req.body)) {
         if (!value) not_provided.push(key);
     }
-    res.send(`You have not provided your ${not_provided.join(', ')}!`);
+    if (!not_provided[0]) return res.send(`You have not provided your ${not_provided.join(', ')}!`);
     response = await axios.post('https://json.ldbc.cf', {
         "username": process.env.USER,
         "database": process.env.DB,
