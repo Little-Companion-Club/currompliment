@@ -84,7 +84,7 @@ app.post('/conduct_transaction', async (req, res) => {
     for (const [key, value] of Object.entries(req.body)) {
         if (!value) not_provided.push(key);
     }
-    if (!not_provided[0]) return res.send(`You have not provided your ${not_provided.join(', ')}!`);
+    if (not_provided[0]) return res.send(`You have not provided your ${not_provided.join(', ')}!`);
     response = await axios.post('https://json.ldbc.cf', {
         "username": process.env.USER,
         "database": process.env.DB,
@@ -105,7 +105,8 @@ app.post('/conduct_transaction', async (req, res) => {
     });
     if (!response.data[0]) return res.send('Invalid email/password!');
     if (!responsea.data[0]) return res.send('The email you are trying to send compliments to does not exist...');
-    const match = await bcrypt.compare(password, response.data[0].password);
+    if (!responsea.data[0].username === req.body.sendtoname) return res.send('The email you are trying to send credits to does not have the username that you provided...');
+    const match = await bcrypt.compare(req.body.password, response.data[0].password);
     if (match === true) {
         await axios.post('https://json.ldbc.cf', {
             "username": process.env.USER,
@@ -113,8 +114,8 @@ app.post('/conduct_transaction', async (req, res) => {
             "password": process.env.PASS,
             "intent": 'insert',
             "table": 'logs',
-            "collumns": ['email', 'username', 'password', 'balance', 'amount', 'sendtoemail', 'sendtousername', 'compliment'],
-            "data": [req.body.email, req.body.username, req.body.password, response.data[0].balance, req.body.amount, req.body.sendtoemail, req.body.sendtoname, req.body.compliment]
+            "collumns": ['email', 'username', 'balance', 'amount', 'sendtoemail', 'sendtousername', 'compliment'],
+            "data": [req.body.email, req.body.username, response.data[0].balance, parseInt(req.body.amount), req.body.sendtoemail, req.body.sendtoname, req.body.compliment]
         });
         res.send('Transaction successfully started. Please wait while it is reviewed. Please do not be upset if it gets cancelled/rejected.')
     } else res.send('Invalid email/password!');
