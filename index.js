@@ -12,7 +12,11 @@ hash = async (password) => {
     pass = await bcrypt.hash(password, parseInt(process.env.SR));
     return pass;
 }
+const { UniqueID } = require('nodejs-snowflake');
 
+const uid = new UniqueID({
+    returnNumber: false
+}); 
 app.get('/', (req, res) => {
     res.send('boop');
     //incoming: imap.gmail.com:993
@@ -114,8 +118,8 @@ app.post('/conduct_transaction', async (req, res) => {
             "password": process.env.PASS,
             "intent": 'insert',
             "table": 'logs',
-            "collumns": ['email', 'username', 'balance', 'amount', 'sendtoemail', 'sendtousername', 'sendtouserbalance', 'compliment'],
-            "data": [req.body.email, req.body.username, response.data[0].balance, parseInt(req.body.amount), req.body.sendtoemail, req.body.sendtoname, responsea.data[0].balance, req.body.compliment]
+            "collumns": ['email', 'username', 'balance', 'send_amount', 'sendtoemail', 'sendtousername', 'sendtouserbalance', 'compliment', 'transaction_id'],
+            "data": [req.body.email, req.body.username, response.data[0].balance, parseInt(req.body.amount), req.body.sendtoemail, req.body.sendtoname, responsea.data[0].balance, req.body.compliment, uid.getUniqueID()]
         });
         res.send('Transaction successfully started. Please wait while it is reviewed. Please do not be upset if it gets cancelled/rejected.')
     } else res.send('Invalid email/password!');
